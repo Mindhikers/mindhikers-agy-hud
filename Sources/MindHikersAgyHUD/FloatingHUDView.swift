@@ -74,20 +74,20 @@ struct FloatingPillBarView: View {
     }
 
     private var fullCapsules: some View {
-        HStack(spacing: 6) {
+        HStack(spacing: 5) {
             dragGrip
 
-            // Capsule 1: Live status + Turns + Short model name
-            capsuleButton(active: uiState.activeCapsule == .session) {
+            // Capsule 1: Live status + Turns (model name already shown in Antigravity composer & in detail card)
+            capsuleButton(active: uiState.activeCapsule == .session, horizontalPadding: 8.5) {
                 HStack(spacing: 5) {
                     statusDot
                     if isOk {
-                        Text("\(payload?.userTurns ?? 0) 轮 · \(HudFormat.shortModel(payload?.model ?? "AGY"))")
+                        Text("\(payload?.userTurns ?? 0) 轮")
                             .font(.system(size: 11.5, weight: .medium, design: .rounded))
                             .monospacedDigit()
                             .fixedSize(horizontal: true, vertical: false)
                     } else {
-                        Text(service.errorMessage != nil ? "读取异常" : "等待对话…")
+                        Text(service.errorMessage != nil ? "异常" : "等待…")
                             .font(.system(size: 11.5, weight: .medium))
                             .foregroundColor(.secondary)
                             .fixedSize(horizontal: true, vertical: false)
@@ -99,12 +99,12 @@ struct FloatingPillBarView: View {
 
             // Capsule 2: Cumulative Tokens + Cache Hit Rate
             if isOk, let totals = payload?.sessionTotals {
-                capsuleButton(active: uiState.activeCapsule == .tokens) {
+                capsuleButton(active: uiState.activeCapsule == .tokens, horizontalPadding: 8.5) {
                     HStack(spacing: 4) {
                         Text("✦")
                             .font(.system(size: 10, weight: .semibold))
                             .foregroundColor(Color(nsColor: .systemBlue))
-                        Text("\(HudFormat.tokens(totals.totalTokens)) · 缓存 \(Int(totals.cacheHitPct.rounded()))%")
+                        Text("\(HudFormat.tokens(totals.totalTokens)) · 缓\(Int(totals.cacheHitPct.rounded()))%")
                             .font(.system(size: 11.5, weight: .medium, design: .rounded))
                             .monospacedDigit()
                             .fixedSize(horizontal: true, vertical: false)
@@ -114,9 +114,9 @@ struct FloatingPillBarView: View {
                 }
             }
 
-            // Capsule 3: Checkpoint badge + Progress bar + Context % (~87% compact width to leave plenty of room before Turbo)
+            // Capsule 3: Checkpoint badge + Progress bar + Context %
             if isOk {
-                capsuleButton(active: uiState.activeCapsule == .context, horizontalPadding: 8.5) {
+                capsuleButton(active: uiState.activeCapsule == .context, horizontalPadding: 8) {
                     HStack(spacing: 5) {
                         if checkpointCount > 0 {
                             Text("\(checkpointCount)")
@@ -144,7 +144,7 @@ struct FloatingPillBarView: View {
                                     .frame(width: max(4, geo.size.width * CGFloat(min(100, max(0, usedPct)) / 100.0)))
                             }
                         }
-                        .frame(width: 34, height: 5.5)
+                        .frame(width: 32, height: 5.5)
 
                         Text(String(format: "%.1f%%", usedPct))
                             .font(.system(size: 11.5, weight: .semibold, design: .rounded))

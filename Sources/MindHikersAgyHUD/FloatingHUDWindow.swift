@@ -4,6 +4,7 @@ import CoreGraphics
 import SwiftUI
 
 enum HUDPositionPreset {
+    case titlebarRight
     case composerAligned
     case topRight
     case topLeftNotchSafe
@@ -37,7 +38,7 @@ final class FloatingHUDController: NSObject, NSWindowDelegate {
     private var localKeyMonitor: Any?
 
     private let fixedPillHeight: CGFloat = 40
-    private var latestMeasuredWidth: CGFloat = 432
+    private var latestMeasuredWidth: CGFloat = 326
     private let posXKey = "MindHikersAgyHUD.floatingX_v7"
     private let posYKey = "MindHikersAgyHUD.floatingY_v7"
     private let screenPrefKey = "MindHikersAgyHUD.preferredScreen"
@@ -260,9 +261,10 @@ final class FloatingHUDController: NSObject, NSWindowDelegate {
 
         let posMenu = NSMenu()
         let presets: [(String, Selector)] = [
-            ("对齐反重力输入栏（推荐）", #selector(menuPosComposer)),
-            ("停靠右上角", #selector(menuPosTopRight)),
-            ("停靠左上角（刘海安全区）", #selector(menuPosTopLeft)),
+            ("停靠反重力顶栏空白区（零遮挡·推荐）", #selector(menuPosTitlebarRight)),
+            ("对齐反重力输入栏", #selector(menuPosComposer)),
+            ("停靠屏幕右上角", #selector(menuPosTopRight)),
+            ("停靠屏幕左上角（刘海安全区）", #selector(menuPosTopLeft)),
             ("停靠顶部居中（刘海下方）", #selector(menuPosTopCenter)),
             ("停靠左下角", #selector(menuPosBottomLeft)),
             ("停靠右下角（避开输入框）", #selector(menuPosBottomRight)),
@@ -338,6 +340,7 @@ final class FloatingHUDController: NSObject, NSWindowDelegate {
 
     @objc private func menuToggleMini() { toggleMiniMode() }
     @objc private func menuAutoFollow() { service.pinnedConversationId = nil }
+    @objc private func menuPosTitlebarRight() { moveToPreset(.titlebarRight) }
     @objc private func menuPosComposer() { moveToPreset(.composerAligned) }
     @objc private func menuPosTopRight() { moveToPreset(.topRight) }
     @objc private func menuPosTopLeft() { moveToPreset(.topLeftNotchSafe) }
@@ -393,7 +396,21 @@ final class FloatingHUDController: NSObject, NSWindowDelegate {
         return screenContaining(rect: rect)
     }
 
-    /// Computes default composer-aligned origin: left edge of the grip aligns right beside
+    /// Aligns cleanly inside the empty right half of Antigravity's top titlebar (clearing the far-right toggle icons).
+    /// Unaffected by left/right sidebar toggles and requires zero system permissions.
+    private func titlebarRightOrigin(width: CGFloat, on screen: NSScreen) -> NSPoint {
+        let vis = screen.visibleFrame
+        if let agy = detectAntigravityFrame(),
+           screenContaining(rect: agy) == screen,
+           agy.width >= 760 {
+            let x = max(agy.minX + 360, agy.maxX - width - 96)
+            let y = agy.maxY - fixedPillHeight - 2
+            return NSPoint(x: x, y: y)
+        }
+        return NSPoint(x: vis.maxX - width - 16, y: vis.maxY - fixedPillHeight - 8)
+    }
+
+    /// Computes composer-aligned origin: left edge of the grip aligns right beside
     /// Antigravity's model/reasoning selector while reserving safe right clearance before Turbo.
     private func composerAlignedOrigin(width: CGFloat, on screen: NSScreen) -> NSPoint {
         let vis = screen.visibleFrame
@@ -466,6 +483,8 @@ final class FloatingHUDController: NSObject, NSWindowDelegate {
 
         let rawOrigin: NSPoint
         switch preset {
+        case .titlebarRight:
+            rawOrigin = titlebarRightOrigin(width: w, on: screen)
         case .composerAligned:
             rawOrigin = composerAlignedOrigin(width: w, on: screen)
         case .topRight:
@@ -487,7 +506,7 @@ final class FloatingHUDController: NSObject, NSWindowDelegate {
     }
 
     private func measuredPillWidth() -> CGFloat {
-        let minW: CGFloat = uiState.isMiniMode ? 104 : 320
+        let minW: CGFloat = uiState.isMiniMode ? 104 : 220
         return max(minW, ceil(latestMeasuredWidth))
     }
 
@@ -541,7 +560,7 @@ final class FloatingHUDController: NSObject, NSWindowDelegate {
         }
         let screen = targetScreen()
         let w = measuredPillWidth()
-        let origin = composerAlignedOrigin(width: w, on: screen)
+        let origin = titlebarRightOrigin(width: w, on: screen)
         let raw = NSRect(origin: origin, size: NSSize(width: w, height: fixedPillHeight))
         let safe = adjustFrameAvoidingNotch(raw, on: screen)
         isProgrammaticMove = true

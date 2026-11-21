@@ -24,6 +24,7 @@
 本工具严格限定为 **纯本地只读观察者（Read-Only Observer）**：
 
 - **零网络请求**：不访问 Google 任何云端接口，无任何第三方遥测或更新检查。
+- **零系统敏感权限**：不需要 macOS「辅助功能（Accessibility）」权限，也不需要「屏幕录制」权限。
 - **不碰账号凭据**：不读/写 macOS Keychain，不保存或刷新 OAuth Token，不修改官方 `state.vscdb`。
 - **零侵入官方客户端**：不修改 `/Applications/Antigravity.app` 安装包，不破坏签名，也不需要以 `--remote-debugging-port` 启动 Antigravity。
 - **只读数据库**：仅只读访问 `~/.gemini/antigravity/conversations/*.db` 与 `~/.gemini/antigravity/annotations/*.pbtxt`。
