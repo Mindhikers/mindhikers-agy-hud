@@ -38,8 +38,8 @@ final class FloatingHUDController: NSObject, NSWindowDelegate {
 
     private let fixedPillHeight: CGFloat = 40
     private var latestMeasuredWidth: CGFloat = 432
-    private let posXKey = "MindHikersAgyHUD.floatingX_v6"
-    private let posYKey = "MindHikersAgyHUD.floatingY_v6"
+    private let posXKey = "MindHikersAgyHUD.floatingX_v7"
+    private let posYKey = "MindHikersAgyHUD.floatingY_v7"
     private let screenPrefKey = "MindHikersAgyHUD.preferredScreen"
     private let miniModeKey = "MindHikersAgyHUD.miniMode"
 
@@ -400,9 +400,9 @@ final class FloatingHUDController: NSObject, NSWindowDelegate {
         if let agy = detectAntigravityFrame(),
            screenContaining(rect: agy) == screen,
            agy.width >= 960 {
-            let desiredX = agy.minX + round(agy.width * 0.35)
-            // Reserve 270pt on the right side of Antigravity's composer for Turbo + voice + action buttons
-            let maxSafeX = agy.maxX - 270 - width
+            let desiredX = agy.minX + round(agy.width * 0.382)
+            // Reserve 260pt on the right side of Antigravity's composer for Turbo + voice + action buttons
+            let maxSafeX = agy.maxX - 260 - width
             let x = max(agy.minX + 240, min(desiredX, maxSafeX))
             let y = agy.minY + 25
             return NSPoint(x: x, y: y)
